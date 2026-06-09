@@ -54,7 +54,6 @@ end
 
 function button:update(dt)
     if InputEvents:is_action_pressed(self.event) then
-        print("clicked button")
         self.pressed = true
         InputEvents:run(self.event, unpack(self.args))
     end
