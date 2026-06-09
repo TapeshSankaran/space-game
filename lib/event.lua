@@ -5,14 +5,13 @@ local class = require("lib.class")
 ---@class Events
 local events = class:extract("Events")
 
-
 function events:new()
     self.events = {}
     return self
 end
 
 ---@param key string
----@param triggers? function
+---@param triggers? table<function>
 ---@param action? function
 function events:new_event(key, triggers, action)
     self.events[key] = { triggers = triggers, action = action }
@@ -37,12 +36,21 @@ function events:update_action(key, action)
     self.events[key].action = action
 end
 
-function events:is_action_pressed(key, ...)
+---@param key string
+---@param context? table
+---@return boolean
+function events:is_action_pressed(key, context)
     assert(self.events[key] ~= nil, "Event Key doesn't point to an event.")
     local event = self.events[key]
     for _, trigger in ipairs(event.triggers) do
-        if trigger(...) then
-            return true
+        if type(trigger) ~= "function" and trigger:is_type("Button") then
+            if trigger:is_triggered() then
+                return true
+            end
+        else
+            if trigger(context) then
+                return true
+            end
         end
     end
     return false

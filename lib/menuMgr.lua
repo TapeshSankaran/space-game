@@ -28,6 +28,11 @@ function make_menus()
         action = function ()
             Scene_Manager:switch("gameScene")
         end,
+        triggers = {
+            function ()
+                return Input:is_key_pressed('return')
+            end,
+        },
         p = Vector(width / 2 - 50, height*0.8),
         s = Vector(100, 50),
         f = COLORS.TRUE.WHITE,
