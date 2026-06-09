@@ -1,4 +1,7 @@
-local color = require "color"
+Color  = require("lib.color")
+Vector = require("lib.vector")
+Class  = require("lib.class")
+Events = require("lib.event")
 
 -- ======CONFIGURATION====== --
 
@@ -29,7 +32,7 @@ FILE_LOCATIONS = {
     },
 
     FONTS = {
-
+        MARTIUS = "resources/fonts/Martius-LV9L4.ttf",
     },
 
     RESOURCES = {
@@ -40,19 +43,23 @@ FILE_LOCATIONS = {
     -- Colors --
 COLORS = {
     TRUE = {
-        BLACK = color(0, 0, 0),
-        GREY  = color(0.5, 0.5, 0.5),
-        WHITE = color(1, 1, 1),
+        BLACK = Color(0, 0, 0),
+        GREY  = Color(0.5, 0.5, 0.5),
+        WHITE = Color(1, 1, 1),
 
-        R = color(1, 0, 0),
-        G = color(0, 1, 0),
-        B = color(0, 0, 1),
+        R = Color(1, 0, 0),
+        G = Color(0, 1, 0),
+        B = Color(0, 0, 1),
     },
 }
 
 -- ======GLOBAL VARS====== --
-Anim_Manager = nil
+Scene_Manager = nil
+Input = {}
+InputEvents = {}
+
 Fonts = { s12 = {s = 12}, s16 = {s = 16}, s28 = {s = 28}, s32 = {s = 32}, s48 = {s = 48}, s64 = {s = 64}, s128 = {s = 128} }
+Menus = {}
 
 -- ======USEFUL FUNCTIONS====== --
 function indexOf(tbl, val)
