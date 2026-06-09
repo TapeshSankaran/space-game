@@ -4,7 +4,7 @@ local shape = require("lib.shape")
 
 local button = Class:extract("Button")
 
--- cfg: [f{ill color}, b{order color}, name*, font, action*] --
+-- cfg: [f{ill color}, b{order color}, name*, font, action*, args, triggers] --
 function button:new(cfg)
     self.pos = cfg.p and cfg.p or Vector(0, 0)
     self.size = cfg.s and cfg.s or Vector(200, 100)
@@ -21,18 +21,19 @@ function button:new(cfg)
         square = cfg.shape
     end
     
+    self.pressed    = false
     self.event      = cfg.name:lower() .. "_pressed"
+    
     InputEvents:new_event(self.event, 
-        function(button)
-            return button.pressed
-        end,
+        cfg.triggers and cfg.triggers or nil,
         cfg.action
     )
+
+    InputEvents:update_trigger(self.event, self)
 
     self.name       = cfg.name
     self.background = shape:new(square)
     self.font       = cfg.font             and cfg.font   or Fonts.s16.martius
-    self.pressed    = false
     self.args       = cfg.args and cfg.args or {}
 
     return self
@@ -43,9 +44,16 @@ function button:is_hovering()
     return (m_pos >= self.pos and m_pos <= self.pos+self.size) 
 end
 
+function button:is_pressed()
+    return self:is_hovering() and Input:is_mouse_down('left')
+end
+
+function button:is_triggered()
+    return self:is_hovering() and Input:mouse_released('left')
+end
+
 function button:update(dt)
-    if self:is_hovering() and Input:mouse_released('left') then
-        print("clicked button")
+    if InputEvents:is_action_pressed(self.event) then
         self.pressed = true
         InputEvents:run(self.event, unpack(self.args))
     end
