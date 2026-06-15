@@ -86,6 +86,9 @@ function input:reset()
     -- Keyboard --
     self.keyboard.prev_pressed = self.keyboard.pressed
     self.keyboard.pressed = {}
+
+    -- Mouse --
+    scroll = Vector(0, 0)
 end
 
 function input:set_enable(b)
@@ -104,6 +107,14 @@ function input:mouse_scrolled(x, y)
     if y > 0 then y = 1 elseif y < 0 then y = -1 end
 
     scroll = Vector(x, y)
+end
+
+function input:mouse_get_scroll()
+    return self.mouse.scrolling
+end
+
+function input:is_scrolling()
+    return self.mouse.scrolling ~= 0
 end
 
 function input:mouse_screen_position()

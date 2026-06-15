@@ -76,6 +76,10 @@ function indexOfName(tbl, val)
     return nil  -- Not found
 end
 
+function lerp(x, y, r)
+    return x * (1 - r) + y * r
+end
+
 function love.conf(t)
    t.console = true
 end

@@ -1,19 +1,7 @@
 
 local vector = {}
 
-metatable = {
-  __call = function(self, a, b)
-  
-    local vec = {
-      x = a,
-      y = b,
-      w = a,
-      h = b
-    }
-    setmetatable(vec, metatable)
-    return vec
-  
-  end,
+local mt = {
   __add = function(a, b)
     
     return vector(a.x+b.x, a.y+b.y)
@@ -40,9 +28,26 @@ metatable = {
   __lt = function(a, b)
     return a.x < b.x and a.y < b.y
   end,
+
   __tostring = function (self) return '(' .. self.x .. ', ' .. self.y .. ')' end
 }
+mt.__call = function(self, a, b)
+  
+    local vec = {
+      x = a or 0,
+      y = b or 0,
+      w = a or 0,
+      h = b or 0
+    }
 
-setmetatable(vector, metatable)
+    vec.mag = function (self)
+      return math.sqrt(self.x*self.x + self.y*self.y)
+    end
+
+    setmetatable(vec, mt)
+    return vec
+end
+
+setmetatable(vector, mt)
 
 return vector

@@ -12,6 +12,7 @@ function mainMenu:new(sceneMgr)
 end
 
 function mainMenu:update(dt)
+    self.super.update(self, dt)
     self.menu:update(dt)
 end
 

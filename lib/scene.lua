@@ -7,11 +7,17 @@ local scene = Class:extract("Scene")
 -- when scene is made
 function scene:new(sceneMgr)
     self.manager = sceneMgr
+    self.time    = 0.0
+    self.camera  = {}
+    self.camera.pos = Vector()
+    self.camera.zoom = 1.0
 
     return self
 end
 
-function scene:update(dt) end
+function scene:update(dt)
+    self.time = self.time + dt
+end
 
 function scene:draw() end
 
