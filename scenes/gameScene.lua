@@ -1,6 +1,7 @@
 -- Main Menu Scene of Gane --
 local Scene = require("lib.scene")
 local world = require("lib.world")
+local background = require("lib.background")
 
 local gameScene = Scene:extract("Game_Scene")
 
@@ -12,6 +13,7 @@ function gameScene:new(sceneMgr)
     self.menu:enable()
 
     self.world = world(self)
+    self.bg = background({ scene = self, c = {space={COLORS.TRUE.B/3, (COLORS.TRUE.B + COLORS.TRUE.R), COLORS.TRUE.B/2.5}, nebula=Color(0.0, 0.5, 0.9)} })
     self.camVel = Vector()
 
     return self
@@ -36,18 +38,24 @@ function gameScene:update(dt)
         targVel = targVel + Vector(VEL, 0)
     end
     if Input:is_scrolling() then
-        self.camera.zoom = self.camera.zoom + 0.1 * Input:mouse_get_scroll().y
+        if (Input:mouse_get_scroll().y == -1 and self.camera.zoom > 0.5) or
+           (Input:mouse_get_scroll().y == 1  and self.camera.zoom < 2.0) then
+            self.camera.zoom = (self.camera.zoom + 0.1 * Input:mouse_get_scroll().y)
+        end
     end
     self.camVel = lerp(targVel, self.camVel, 0.975)
 
     self.camera.pos = self.camera.pos + self.camVel*dt
+
+    self.bg:update(dt)
 end
 
 function gameScene:draw()
     love.graphics.setColor((COLORS.TRUE.GREY + COLORS.TRUE.BLACK):rgb())
     love.graphics.rectangle("fill", 0, 0, width, height)
 
-    self.world:draw_grid(false)
+    self.bg:draw()
+    --self.world:draw_grid(self.camera.zoom >= 1)
 
     local titleFont = Fonts.s128.martius
     local w = titleFont:getWidth("Game Scene")

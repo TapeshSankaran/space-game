@@ -80,6 +80,27 @@ function lerp(x, y, r)
     return x * (1 - r) + y * r
 end
 
+function table.clone(orig, seen)
+    seen = seen or {}
+    local orig_type = type(orig)
+    local copy
+
+    if orig_type == 'table' then
+        if seen[orig] then
+            return seen[orig]
+        end
+        seen[orig] = copy
+        copy = {}
+        for orig_key, orig_value in next, orig, nil do
+            copy[table.clone(orig_key, seen)] = table.clone(orig_value, seen)
+        end
+        setmetatable(copy, table.clone(getmetatable(orig), seen))
+    else
+        copy = orig
+    end
+    return copy
+end   
+
 function love.conf(t)
    t.console = true
 end

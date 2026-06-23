@@ -18,7 +18,7 @@ function world:update(dt)
 end
 
 function world:draw_grid(drawNum)
-    drawNum = drawNum ~= nil and drawNum or true
+    if drawNum == nil then drawNum = true end
 
     local topLeft     = self:screen_to_world(Vector(0, 0))
     local bottomRight = self:screen_to_world(Vector(width, height))
@@ -60,17 +60,30 @@ function world:draw_grid(drawNum)
 end
 
 -- World is positive upward while screen is negative upwards. Screen lives within World, however.
-function world:screen_to_world(screenPos)
-    local cam = self.scene.camera
-    local wPos= Vector(cam.pos.x + screenPos.x/GRID.x, cam.pos.y - screenPos.y/GRID.y)
+function world:screen_to_world(screenPos, camera)
+    local zoom = self.scene.camera.zoom
+    local pos
+    if camera then pos = camera else pos = self.scene.camera.pos end
+    local wPos= Vector(pos.x + screenPos.x/(GRID.x * zoom), pos.y - screenPos.y/(GRID.y * zoom))
     return wPos
 end
 
-function world:world_to_screen(worldPos)
-    local cam = self.scene.camera
-    local relPos = worldPos - cam.pos
-    return Vector(relPos.x * GRID.w * cam.zoom, -relPos.y * GRID.h * cam.zoom)
+function world:world_to_screen(worldPos, camera)
+    local zoom = self.scene.camera.zoom
+    local pos
+    if camera then pos = camera else pos = self.scene.camera.pos end
+    local relPos = worldPos - pos
+    return Vector(relPos.x * GRID.w * zoom, -relPos.y * GRID.h * zoom)
 end
 
+function world:coord_in_world(scrnLen)
+    local cam = self.scene.camera
+    return Vector(scrnLen.x/(GRID.x * cam.zoom), 0 - scrnLen.y/(GRID.y * cam.zoom))
+end
+
+function world:coord_in_pixels(wrldPos)
+    local cam = self.scene.camera
+    return Vector(wrldPos.x * GRID.x * cam.zoom, wrldPos.y * GRID.x * cam.zoom)
+end
 
 return world
