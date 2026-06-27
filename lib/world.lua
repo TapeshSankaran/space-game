@@ -62,18 +62,27 @@ end
 -- World is positive upward while screen is negative upwards. Screen lives within World, however.
 function world:screen_to_world(screenPos, camera)
     local zoom = self.scene.camera.zoom
-    local pos
-    if camera then pos = camera else pos = self.scene.camera.pos end
-    local wPos= Vector(pos.x + screenPos.x/(GRID.x * zoom), pos.y - screenPos.y/(GRID.y * zoom))
-    return wPos
+    local pos = self.scene.camera.pos
+    if camera then pos = camera end
+    local camOffset = Vector(width, height) / 2
+
+    return Vector(
+        pos.x + (screenPos.x - camOffset.x) / (GRID.w * zoom),
+        pos.y - (screenPos.y - camOffset.y) / (GRID.h * zoom)
+    )
 end
 
 function world:world_to_screen(worldPos, camera)
     local zoom = self.scene.camera.zoom
-    local pos
-    if camera then pos = camera else pos = self.scene.camera.pos end
+    local pos = self.scene.camera.pos
+    if camera then pos = camera end
+    local camOffset = Vector(width, height) / 2
     local relPos = worldPos - pos
-    return Vector(relPos.x * GRID.w * zoom, -relPos.y * GRID.h * zoom)
+
+    return Vector(
+        relPos.x * GRID.w * zoom,
+       -relPos.y * GRID.h * zoom
+    ) + camOffset
 end
 
 function world:coord_in_world(scrnLen)

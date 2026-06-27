@@ -44,6 +44,10 @@ mt.__call = function(self, a, b)
       return math.sqrt(self.x*self.x + self.y*self.y)
     end
 
+    vec.unpack = function (self)
+      return self.x, self.y
+    end
+
     setmetatable(vec, mt)
     return vec
 end

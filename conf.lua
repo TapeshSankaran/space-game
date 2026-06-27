@@ -1,7 +1,9 @@
-Color  = require("lib.color")
-Vector = require("lib.vector")
-Class  = require("lib.class")
-Events = require("lib.event")
+Color   = require("lib.color")
+Vector  = require("lib.vector")
+Class   = require("lib.class")
+Events  = require("lib.event")
+Shaders = require("lib.shaders")
+
 
 -- ======CONFIGURATION====== --
 

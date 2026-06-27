@@ -13,7 +13,7 @@ function gameScene:new(sceneMgr)
     self.menu:enable()
 
     self.world = world(self)
-    self.bg = background({ scene = self, c = {space={COLORS.TRUE.B/3, (COLORS.TRUE.B + COLORS.TRUE.R), COLORS.TRUE.B/2.5}, nebula=Color(0.0, 0.5, 0.9)} })
+    self.bg = background({ scene = self, c = {space={COLORS.TRUE.B/3, (COLORS.TRUE.B + COLORS.TRUE.R), COLORS.TRUE.B/2.5}, nebula=Color(0.9, 0.0, 0.7)} })
     self.camVel = Vector()
 
     return self
@@ -63,6 +63,7 @@ function gameScene:draw()
     love.graphics.setFont(titleFont)
     love.graphics.print("Game Scene", width/2 - w/2, height*0.1)
 
+    self.bg:post_draw()
     --self.menu:draw()
 end
 
