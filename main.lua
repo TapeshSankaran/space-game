@@ -5,6 +5,7 @@ require("lib.menuMgr")
 local sceneMgr = require("lib.sceneMgr")
 local input    = require("lib.input")
 require("lib.sys-set")
+Shaders = require("lib.shaders")
 
 -- On first load. Create global variables here
 function love.load()
@@ -18,6 +19,8 @@ function love.load()
     -- Menu Manager --
     --  Fonts  --
     Fonts = font_maker(FILE_LOCATIONS.FONTS, Fonts)
+    Images = image_maker(FILE_LOCATIONS.IMAGES, Images)
+    
     --  Menus  --
     Menus = make_menus()
 

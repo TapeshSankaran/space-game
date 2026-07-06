@@ -68,7 +68,10 @@ function background:update(dt)
     --  nothing
 
     -- Lighting Shader
-    --  nothing
+    shaders.lighting:send("res",  { width, height })
+    shaders.lighting:send("cam",  {self.scene.camera.pos.x, self.scene.camera.pos.y})
+    shaders.lighting:send("time", self.scene.time)
+    shaders.lighting:send("zoom", self.scene.camera.zoom)
 end
 
 -- Noise function, using love's noise but adding a seed to it, influenced by random
@@ -144,7 +147,7 @@ function background:space(parallax)
 end
 
 -- Draw function for nebula, using GLSL space shader
-function background:nebula(parallax)
+function background:nebula()
     local c = COLORS.TRUE.BLACK
     if self.colors.nebula then c = self.colors.nebula end
     local color = Color(c.r, c.g, c.b, 0.35)
@@ -152,6 +155,7 @@ function background:nebula(parallax)
     love.graphics.setColor(color:rgb())
     love.graphics.rectangle("fill", 0, 0, width, height)
     love.graphics.setShader()
+    love.graphics.setColor(COLORS.TRUE.WHITE:rgb())
 end
 
 -- Draw function for stars, using for_grid() world grid
@@ -178,24 +182,36 @@ function background:stars(parallax, odds, offset)
             love.graphics.circle( "fill", sp.x, sp.y, 8*dist*a )
         end
     end, parallax, odds, color, offset)
+    love.graphics.setColor(COLORS.TRUE.WHITE:rgb())
 end
 
 -- Post-world-render screen texture shader
 function background:texture()
-    local c = Color(0.95, 0.95, 0.9)
-    if self.colors.nebula then c = self.colors.nebula end
-    local color = Color(c.r, c.g, c.b, 0.3)
+    local c = COLORS.TRUE.BLACK
+    if self.colors.texture then c = self.colors.texture end
+    local color = Color(c.r, c.g, c.b, 0.1)
     love.graphics.setShader(shaders.texture)
     love.graphics.setColor(color:rgb())
     love.graphics.rectangle("fill", 0, 0, width, height)
     love.graphics.setShader()
+    love.graphics.setColor(COLORS.TRUE.WHITE:rgb())
+end
+
+function background:lighting()
+    local c = COLORS.TRUE.BLACK
+    local color = Color(c.r, c.g, c.b, 0.5)
+    love.graphics.setShader(shaders.lighting)
+    love.graphics.setColor(color:rgb())
+    love.graphics.rectangle("fill", 0, 0, width, height)
+    love.graphics.setShader()
+    love.graphics.setColor(COLORS.TRUE.WHITE:rgb())
 end
 
 -- Background Draw Function w/ Parallax effects
 function background:draw(pos)
     self:space(0.1)
     self:stars(0.2, 0.1, 1000)
-    self:nebula(nebula_parallax)
+    self:nebula()
     self:stars(0.75, 0.025, -1000)
     self:stars(0.8, 0.025, -200)
     self:stars(0.85, 0.025, -500)
@@ -204,6 +220,8 @@ end
 
 -- Background post-world-render draw function
 function background:post_draw()
+    self:stars(1.2, 0.02, 2000)
+    self:lighting()
     self:texture()
 end
 

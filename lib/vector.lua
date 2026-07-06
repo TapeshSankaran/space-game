@@ -48,6 +48,11 @@ mt.__call = function(self, a, b)
       return self.x, self.y
     end
 
+    vec.angle_to = function (self, v)
+      if v.x - self.x == 0 then return 0 end
+      return math.atan2( (v.y - self.y) , (v.x - self.x) )
+    end
+
     setmetatable(vec, mt)
     return vec
 end

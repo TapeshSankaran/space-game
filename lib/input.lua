@@ -122,6 +122,12 @@ function input:mouse_screen_position()
     return self.mouse.pos
 end
 
+function input:mouse_world_position()
+    if not self:mouse_is_enabled() then return end
+    if not self.scene.world then return nil end
+    return self.scene.world:screen_to_world(self.mouse.pos)
+end
+
 function input:mouse_screen_velocity()
     if not self:mouse_is_enabled() then return end
     return (self.mouse.pos - self.mouse.prevPos) / self.dt

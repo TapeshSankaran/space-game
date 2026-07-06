@@ -2,7 +2,7 @@ Color   = require("lib.color")
 Vector  = require("lib.vector")
 Class   = require("lib.class")
 Events  = require("lib.event")
-Shaders = require("lib.shaders")
+
 
 
 -- ======CONFIGURATION====== --
@@ -22,7 +22,8 @@ seed = os.time() -- [default: 5 for testing, os.time() for main use]
     -- File Locations --
 FILE_LOCATIONS = {
     IMAGES = {
-
+        SHIP  = "sprites/Ships/Spaceships/01/Spaceship_01_ORANGE.png",
+        BOOST = "sprites/Ships/Flame_01.png",
     },
 
     SPRITE_SHEETS = {
@@ -61,7 +62,9 @@ Input = {}
 InputEvents = {}
 
 Fonts = { s12 = {s = 12}, s16 = {s = 16}, s28 = {s = 28}, s32 = {s = 32}, s48 = {s = 48}, s64 = {s = 64}, s128 = {s = 128} }
+Images = {}
 Menus = {}
+Shaders = {}
 
 -- ======USEFUL FUNCTIONS====== --
 function indexOf(tbl, val)

@@ -22,8 +22,7 @@ function mainMenu:new(sceneMgr)
                 (COLORS.TRUE.B + COLORS.TRUE.R),
                 COLORS.TRUE.B/2.5
             },
-            nebula=Color(0.2, 0.8, 0.5),
-            star=Color(0.85, 0.95, 0.85)
+            nebula=Color(0.9, 0.0, 0.7)
         } 
     })
     self.menu:enable()

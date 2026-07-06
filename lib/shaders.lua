@@ -113,12 +113,12 @@ shaders.nebula = love.graphics.newShader(noise .. [[
 
         float n = fbm(nebHash, 4) * 0.5 + 0.5;
         
-        float a = smoothstep(0.0, 0.8, n);
+        float a = floor(smoothstep(0.0, 0.8, n) * 15) / 15;
 
         vec3 c = vec3(
-            smoothstep(0.2, 0.7, fbm(vec3(wPos, 1000 + time * TIMESCALE), 3) * 0.5 + 0.5), 
-            smoothstep(0.2, 0.7, fbm(vec3(wPos, 2000 + time * TIMESCALE), 3) * 0.5 + 0.5), 
-            smoothstep(0.2, 0.7, fbm(vec3(wPos, 3000 + time * TIMESCALE), 3) * 0.5 + 0.5)
+            floor(smoothstep(0.2, 0.7, fbm(vec3(wPos, 1000 + time * TIMESCALE), 3) * 0.5 + 0.5) * 15) / 15, 
+            floor(smoothstep(0.2, 0.7, fbm(vec3(wPos, 2000 + time * TIMESCALE), 3) * 0.5 + 0.5) * 15) / 15, 
+            floor(smoothstep(0.2, 0.7, fbm(vec3(wPos, 3000 + time * TIMESCALE), 3) * 0.5 + 0.5) * 15) / 15
         );
 
         if (n < 0.3) {
@@ -160,21 +160,43 @@ shaders.lighting = love.graphics.newShader(noise .. [[
     uniform vec2 res;
     uniform vec2 cam;
     uniform float time;
-    uniform float parallax;
     uniform float zoom;
 
-    float SCALE = 0.0025;
+    float SCALE = 0.0015;
     float TIMESCALE = 0.025;
 
     vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+        vec4 pixelColor = Texel(texture, texture_coords);
         vec2 center = screen_coords - res / 2;
-        vec2 wPos = vec2((center.x * SCALE / zoom + cam.x * parallax) , (center.y * SCALE / zoom - cam.y * parallax) ) ;
+        vec2 wPos = vec2((center.x * SCALE / zoom + cam.x * 0.125) , (center.y * SCALE / zoom - cam.y * 0.125) ) ;
         vec3 lightHash = vec3(wPos[0], wPos[1], time * TIMESCALE);
 
         float n = fbm(lightHash, 1) * 0.5 + 0.5;
-        float a = smoothstep(0.2, 1.0, n);
+        float a = smoothstep(0.0, 0.8, n);
 
-        return vec4(color.rgb, color.a * a);
+        return vec4(color.rgb*pixelColor.rgb*a, color.a * pixelColor.a * a);
+    }
+]])
+
+shaders.light = love.graphics.newShader(noise .. [[
+    uniform vec2 res;
+    uniform vec2 cam;
+    uniform float time;
+    uniform float zoom;
+
+    float SCALE = 0.0015;
+    float TIMESCALE = 0.025;
+
+    vec4 effect(vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords) {
+        vec4 pixelColor = Texel(texture, texture_coords);
+        vec2 center = screen_coords - res / 2;
+        vec2 wPos = vec2((center.x * SCALE / zoom + cam.x * 0.125) , (center.y * SCALE / zoom - cam.y * 0.125) ) ;
+        vec3 lightHash = vec3(wPos[0], wPos[1], time * TIMESCALE);
+
+        float n = fbm(lightHash, 1) * 0.5 + 0.5;
+        float a = smoothstep(0.0, 0.8, n);
+
+        return vec4(color.rgb*pixelColor.rgb*a, color.a * pixelColor.a);
     }
 ]])
 

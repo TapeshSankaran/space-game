@@ -8,6 +8,11 @@ local slider = require("lib.slider")
 -- cfg: [f{ill color}, b{order color}, name*, font, action] --
 local button = require("lib.button")
 
+local funcList = {
+    images = image_maker,
+    fonts  = font_maker,
+}
+
 function font_maker(fontList, g_list)
     for name, fileLoc in pairs(fontList) do
         name = name:lower()
@@ -16,6 +21,24 @@ function font_maker(fontList, g_list)
         end
     end
     return g_list
+end
+
+function image_maker(imgList, g_list)
+    for name, fileLoc in pairs(imgList) do
+        name = name:lower()
+        g_list[name] = love.graphics.newImage(fileLoc)
+    end
+    return g_list
+end
+
+function enum_handler(enumList, g_lists)
+    for name, list in pairs(enumList) do
+        if funcList[name] then funcList[name](list, g_lists[name])
+        else
+            table.insert(g_lists[name], funcList)
+        end
+    end
+    return g_lists
 end
 
 function make_menus()
