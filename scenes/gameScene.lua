@@ -9,8 +9,7 @@ local VEL = 4
 
 function gameScene:new(sceneMgr)
     self.super.new(self, sceneMgr)
-    self.menu = Menus["mainMenu"]
-    self.menu:enable()
+    self.pause = Menus['pauseMenu']
     
     self.world = world(self)
     self.player = player:new(self)
@@ -35,6 +34,7 @@ end
 
 function gameScene:update(dt)
     self.super.update(self, dt)
+    self.pause:update(dt)
     self.player:update(dt)
 
     self.camera.pos = lerp(self.camera.pos, self.player.pos, 0.05)
@@ -55,9 +55,11 @@ function gameScene:draw()
     love.graphics.setFont(titleFont)
     love.graphics.print("Game Scene", width/2 - w/2, height*0.1)
     love.graphics.setColor(COLORS.TRUE.WHITE:rgb())
-    --self.player:draw()
+    self.player:draw()
+    
+    self.bg:stars(1.2, 0.02, 2000)
+    self.pause:draw()
     self.bg:post_draw()
-    --self.menu:draw()
 end
 
 function gameScene:enter() end

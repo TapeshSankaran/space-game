@@ -9,8 +9,8 @@ function player:new(scene)
     self.scene = scene
     self.pos = self.scene.world:screen_to_world(Vector(0, 0))
     self.rot = 0
-    self.booster = Images.booster
-    self.ship = Images.ship
+    self.booster = Images.boost1.img
+    self.ship = Images.ship.img
     self.vel = Vector(0, 0)
     return self
 end

@@ -39,18 +39,32 @@ mt.__call = function(self, a, b)
       w = a or 0,
       h = b or 0
     }
-
-    vec.mag = function (self)
-      return math.sqrt(self.x*self.x + self.y*self.y)
-    end
-
-    vec.unpack = function (self)
+    
+    vec.unpack   = function (self)
       return self.x, self.y
     end
 
+    vec.hash     = function (self)
+      return ('%g,%g'):format(self.x, self.y)
+    end
+
+    vec.__eq     = function (self, v)
+      return self:hash() == v:hash()
+    end
+
+    vec.mag      = function (self)
+      return math.sqrt(self.x*self.x + self.y*self.y)
+    end
+    
+    vec.cross    = function (self, v)
+      return self.x * v.y - self.y * v.x
+    end
+
     vec.angle_to = function (self, v)
+
       if v.x - self.x == 0 then return 0 end
       return math.atan2( (v.y - self.y) , (v.x - self.x) )
+
     end
 
     setmetatable(vec, mt)

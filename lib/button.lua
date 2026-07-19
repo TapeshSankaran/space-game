@@ -11,8 +11,8 @@ function button:new(cfg)
     
     local square = { 
         t = "rect", 
-        f = cfg.f,
-        b = cfg.b,
+        f = cfg.f and cfg.f or COLORS.TRUE.WHITE,
+        b = cfg.b and cfg.b or COLORS.TRUE.BLACK,
         p = self.pos,
         s = self.size
     }
@@ -23,16 +23,18 @@ function button:new(cfg)
     
     self.pressed    = false
     self.event      = cfg.name:lower() .. "_pressed"
-    
     InputEvents:new_event(self.event, 
-        cfg.triggers and cfg.triggers or nil,
+        cfg.triggers and cfg.triggers or {},
         cfg.action
     )
-
     InputEvents:update_trigger(self.event, self)
-
+    
+    if type(cfg.action) ~= "function" and cfg.action:is_type("Menu") then
+        InputEvents:update_trigger(cfg.action.event, self)
+    end
+    
     self.name       = cfg.name
-    self.background = shape:new(square)
+    self.background = shape(square)
     self.font       = cfg.font             and cfg.font   or Fonts.s16.martius
     self.args       = cfg.args and cfg.args or {}
 

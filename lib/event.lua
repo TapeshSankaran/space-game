@@ -14,7 +14,7 @@ end
 ---@param triggers? table<function>
 ---@param action? function
 function events:new_event(key, triggers, action)
-    self.events[key] = { triggers = triggers, action = action }
+    self.events[key] = { triggers = triggers and triggers or {}, action = action }
 end
 
 
@@ -41,6 +41,7 @@ end
 ---@return boolean
 function events:is_action_pressed(key, context)
     assert(self.events[key] ~= nil, "Event Key doesn't point to an event.")
+    if context == nil then context = {} end
     local event = self.events[key]
     for _, trigger in ipairs(event.triggers) do
         if type(trigger) ~= "function" and trigger:is_type("Button") then
@@ -56,9 +57,9 @@ function events:is_action_pressed(key, context)
     return false
 end
 
-function events:run(key, ...)
+function events:run(key, args)
     assert(self.events[key] ~= nil, "Event Key doesn't point to an event.")
-    return self.events[key]:action(...)
+    return self.events[key].action(args)
 end
 
 

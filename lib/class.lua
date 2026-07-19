@@ -18,7 +18,7 @@ function class:extract(type)
 end
 
 function class:is_subclass(class)
-    if class == nil or type(class) == "table" then
+    if class == nil or type(class) ~= "table" then
         return false
     end
 

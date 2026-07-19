@@ -220,7 +220,6 @@ end
 
 -- Background post-world-render draw function
 function background:post_draw()
-    self:stars(1.2, 0.02, 2000)
     self:lighting()
     self:texture()
 end

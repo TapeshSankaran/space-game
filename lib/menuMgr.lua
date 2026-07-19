@@ -26,7 +26,11 @@ end
 function image_maker(imgList, g_list)
     for name, fileLoc in pairs(imgList) do
         name = name:lower()
-        g_list[name] = love.graphics.newImage(fileLoc)
+        g_list[name] = {
+            img  = love.graphics.newImage(fileLoc),
+            data = love.image.newImageData(fileLoc),
+            path = fileLoc
+        }
     end
     return g_list
 end
@@ -43,10 +47,11 @@ end
 
 function make_menus()
     local g_list = {}
-
+    --Menu Create Config: { items, name?, triggers?, extra? }
+    
     -- Start Menu --
 
-    startButton = button:new({
+    startButton = button({
         name = "Start",
         action = function ()
             Scene_Manager:switch("gameScene")
@@ -57,14 +62,38 @@ function make_menus()
             end,
         },
         p = Vector(width / 2 - 50, height*0.8),
-        s = Vector(100, 50),
-        f = COLORS.TRUE.WHITE,
-        b = COLORS.TRUE.BLACK,
+        s = Vector(100, 50)
     })
-    g_list["mainMenu"] = menu:new({i = {startButton}})
+    g_list["mainMenu"] = menu({items = {startButton}})
 
+    
     -- Pause Menu --
+    g_list["pauseMenu"] = menu({
+        name = "pause",
+        triggers = {
+            function ()
+                return Input:is_key_pressed('escape')
+            end
+        },
+        items = {
+            button({
+                name="Exit",
+                action=function ()
+                    g_list["pauseMenu"]:toggle(false)
+                    Scene_Manager:switch("mainMenu")
+                end,
+                p=Vector(width / 2 - 50, height * 0.5 - 25),
+                s=Vector(100, 50)
+            }),
 
+        }
+    })
+    g_list["pauseMenu"]:add_item(button:new({
+        name="Return",
+        action=g_list["pauseMenu"],
+        p = Vector(width / 2 - 50, height * 0.8),
+        s = Vector(100, 50)
+    }))
 
 
     --  Main UI  --

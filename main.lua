@@ -11,11 +11,11 @@ Shaders = require("lib.shaders")
 function love.load()
     -- Set Window Settings --
     system_set()
-
+    
     -- Input Handling --
     Input = input:new()
     InputEvents = Events:new()
-
+    
     -- Menu Manager --
     --  Fonts  --
     Fonts = font_maker(FILE_LOCATIONS.FONTS, Fonts)
