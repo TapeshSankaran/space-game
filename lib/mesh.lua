@@ -26,6 +26,8 @@ local outlines = {           -- (1,1) | (0,1) | (1,0) | (0,0)
     [15] = { 1 },            --   1   |   1   |   1   |   1
 }
 
+local lines = {6, 7, 9, 10}
+
 local mesh = Class:extract("Mesh")
 
 function mesh:new(name, img)
@@ -111,12 +113,40 @@ function mesh:marching_squares()
     end
 
     local start = edges[1]
+    local prev     = nil
+    local prevVec  = nil
     local curr     = start
     local currVec  = start.a
     local polygon
     while true do
-        table.insert(polygon, currVec)
+        if prev then
+            if prev.t ~= curr.t then
+
+                local isAligned = false
+                for _, v in ipairs(lines) do
+                    if prev.t == (curr.t + v) % 16 then
+                        isAligned = true
+                        break
+                    end
+                end
+
+                if not isAligned then
+                    table.insert(polygon, currVec)
+                end
+
+            else
+
+                local t = prev.t
+                if t~=3 or t~=5 or t~=10 or t~=12 then
+                    table.insert(polygon, currVec)
+                end
+                
+            end
+        else
+            table.insert(polygon, currVec)
+        end
         curr.v = true
+
         local nextVec
         if currVec == curr.a then
             nextVec = curr.b
@@ -136,10 +166,15 @@ function mesh:marching_squares()
             end
         end
 
+        prevVec = currVec
         currVec = nextVec
+        prev = curr
         curr = next
     end
+
     self.poly = polygon
+    self.vertices = vertices
+    self.edges = edges
 end
 
 function foursquare_mask(a1, a2, a3, a4)
@@ -149,7 +184,9 @@ function foursquare_mask(a1, a2, a3, a4)
             (a1 > 0.5 and 1 or 0) * 1
 end
 
-function mesh:delaunay_triangle()  end
+function mesh:delaunay_triangle()
+    
+end
 
 function mesh:draw()  end
 
