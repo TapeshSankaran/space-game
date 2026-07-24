@@ -44,6 +44,10 @@ mt.__call = function(self, a, b)
       return self.x, self.y
     end
 
+    vec.serialize = function (self)
+      return { self.x, self.y }
+    end
+
     vec.hash     = function (self)
       return ('%g,%g'):format(self.x, self.y)
     end

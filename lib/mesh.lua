@@ -37,34 +37,90 @@ function mesh:new(name, img)
     self.poly = {}
 
     if self:exists() then
-        
         self:load()
-        
     else
-
         self:generate()
         self:save()
-
     end
-
+    
     return self
 end
 
-function mesh:load()  end
+function mesh:load()
+    local path = FILE_LOCATIONS.CACHE .. self.name .. '.mesh'
+    local serialized = love.filesystem.load(path)()
+    self:deserialize(serialized)
+end
 
-function mesh:save()  end
 
-function mesh:exists()  end
+function mesh:save()
+    local path = FILE_LOCATIONS.CACHE .. self.name .. '.mesh'
+    local file = love.filesystem.newFile(path)
+    local serialized = self:serialize()
+    
+    file:open('w')
+    file:write('return ' .. serialized)
+    file:close()
+end
+
+function mesh:deserialize(sTbl)
+    self.version = sTbl.version
+    self.bounds  = {
+        min = Vector(unpack(sTbl.bounds.min)),
+        max = Vector(unpack(sTbl.bounds.max))
+    }
+    self.poly = {}
+    for _, vec in ipairs(sTbl.poly) do
+        table.insert(self.poly, Vector(unpack(vec)))
+    end
+    self.triangles = {}
+    for _, triangle in ipairs(sTbl.triangles) do
+        table.insert(self.triangles, {
+            a=Vector(unpack(triangle.a)),
+            b=Vector(unpack(triangle.b)),
+            c=Vector(unpack(triangle.c))
+        })
+    end
+end
+
+function mesh:serialize()
+    local sTbl = {}
+    sTbl.version = self.version
+    sTbl.bounds  = {
+        min = self.min:serialize(),
+        max = self.max:serialize()
+    }
+    sTbl.poly = {}
+    for _, vec in ipairs(self.poly) do
+        table.insert(sTbl.poly, vec:serialize())
+    end
+    sTbl.triangles = {}
+    for _, triangle in ipairs(self.triangles) do
+        table.insert(sTbl.triangles, {
+            a=triangle.a:serialize(),
+            b=triangle.b:serialize(),
+            c=triangle.c:serialize()
+        })
+    end
+    return Lume.serialize(sTbl)
+end
+
+function mesh:exists()
+    local path = FILE_LOCATIONS.CACHE .. self.name .. '.mesh'
+    return love.filesystem.getInfo(path) ~= nil
+end
 
 function mesh:generate()
     self:marching_squares()
-    self:delaunay_triangle()
+    self:generate_triangles()
 end
 
 function mesh:marching_squares()
     local imgW, imgH = self.imgData:getDimensions()
     local edges = {}
     local vertices = {}
+    local min = Vector(math.huge, math.huge)
+    local max = Vector(0-math.huge, 0-math.huge)
     for x=1,imgW-1 do
         for y=1,imgH-1 do
             local a00 = Color(self.imgData:getPixel(x    , y    )).a
@@ -97,14 +153,14 @@ function mesh:marching_squares()
                 table.insert(edges, edge)
                 
                 if vertices[p1:hash()] then
-                    table.insert(vertices[p1:hash()], edge)
+                    table.insert(vertices[p1:hash()].e, edge)
                 else
-                    vertices[p1:hash()] = { edge }
+                    vertices[p1:hash()] = { e={ edge }, vec=p1 }
                 end
                 if vertices[p2:hash()] then
-                    table.insert(vertices[p2:hash()], edge)
+                    table.insert(vertices[p2:hash()].e, edge)
                 else
-                    vertices[p2:hash()] = { edge }
+                    vertices[p2:hash()] = { e={ edge }, vec=p2 }
                 end
 
                 ::continue::
@@ -114,7 +170,6 @@ function mesh:marching_squares()
 
     local start = edges[1]
     local prev     = nil
-    local prevVec  = nil
     local curr     = start
     local currVec  = start.a
     local polygon
@@ -147,6 +202,18 @@ function mesh:marching_squares()
         end
         curr.v = true
 
+        if currVec.x < min.x then
+            min.x = currVec.x
+        elseif currVec.x > max.x then
+            max.x = currVec.x
+        end
+
+        if currVec.y < min.y then
+            min.y = currVec.y
+        elseif currVec.y > max.y then
+            max.y = currVec.y
+        end
+
         local nextVec
         if currVec == curr.a then
             nextVec = curr.b
@@ -159,22 +226,27 @@ function mesh:marching_squares()
         end
 
         local next
-        for _, edge in ipairs(vertices[nextVec:hash()]) do
+        for _, edge in ipairs(vertices[nextVec:hash()].e) do
             if edge ~= curr and not edge.v then
                 next = edge
                 break
             end
         end
 
-        prevVec = currVec
         currVec = nextVec
         prev = curr
         curr = next
     end
 
-    self.poly = polygon
     self.vertices = vertices
     self.edges = edges
+    
+    self.poly = polygon
+    
+    self.bounds = { 
+        min=min,
+        max=max
+    }
 end
 
 function foursquare_mask(a1, a2, a3, a4)
@@ -184,8 +256,80 @@ function foursquare_mask(a1, a2, a3, a4)
             (a1 > 0.5 and 1 or 0) * 1
 end
 
-function mesh:delaunay_triangle()
+function mesh:generate_triangles()
+    --Ear Clipping
+    local poly = table.clone(self.poly)
+    local triangles = {}
+    while #poly > 3 do
+        
+        for i, vertex in ipairs(poly) do
+
+            local iA = i == 1 and #poly or i-1
+
+            local a = poly[ iA ]
+            local b = vertex
+            local c = poly[ ((i+1) % #poly) ]
+            
+            local theta = math.abs( math.deg( b:angle_to(a) - b:angle_to(c) ) )
+            if theta < 180 then
+
+                local triangle = {
+                    a=a,
+                    b=b,
+                    c=c
+                }
+
+                local outOfBounds = false
+                
+                for _, item in ipairs(self.vertices) do
+
+                    local v = item.vec
+                    if triangle.a ~= v and triangle.b ~= v and triangle.c ~= v then
+                        if in_triangle(triangle, v) then
+                            outOfBounds = true
+                            break
+                        end
+                    end
+
+                end
+                if outOfBounds then
+                    goto continue
+                end
+
+                table.insert(triangles, triangle)
+                table.remove(poly, i)
+                break
+            end
+            ::continue::
+        end
+    end
+    table.insert(triangles, { a=poly[1]:serialize(), b=poly[2]:serialize(), c=poly[3]:serialize() })
+    self.triangles = triangles
+end
+
+function sign(pt, tri)
+    local t1 = tri.a
+    local t2 = tri.b
+    local t3 = tri.c
+
+    local dir1 = (pt.x - t2.x) * (t1.y - t2.y) - (t1.x - t2.x) * (pt.y - t2.y)
+    local dir2 = (pt.x - t3.x) * (t2.y - t3.y) - (t2.x - t3.x) * (pt.y - t3.y)
+    local dir3 = (pt.x - t1.x) * (t3.y - t1.y) - (t3.x - t1.x) * (pt.y - t1.y)
+
+    return dir1, dir2, dir3
+end
+
+function inBounds(d1, d2, d3)
+    local hasNegPt = (d1 < 0) or (d2 < 0) or (d3 < 0)
+    local hasPosPt = (d1 > 0) or (d2 > 0) or (d3 > 0)
+    return not (hasNegPt and hasPosPt)
+end
+
+function in_triangle(tri, pt)
     
+    local d1, d2, d3 = sign(pt, tri)
+    
+    return inBounds(d1, d2, d3)
 end
 
 function mesh:draw()  end

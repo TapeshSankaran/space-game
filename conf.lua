@@ -1,9 +1,9 @@
+Lume    = require("lib.external.lume")
 Color   = require("lib.color")
 Vector  = require("lib.vector")
 Class   = require("lib.class")
 Events  = require("lib.event")
 Ease    = require("lib.ease")
-
 
 -- ======CONFIGURATION====== --
 
@@ -41,7 +41,8 @@ FILE_LOCATIONS = {
 
     RESOURCES = {
 
-    }
+    },
+    CACHE = 'cache/'
 }
 GSTATE = {
     PLAY=0,
@@ -60,6 +61,7 @@ COLORS = {
         B = Color(0, 0, 1),
     },
 }
+
 
 -- ======GLOBAL VARS====== --
 Scene_Manager = nil
