@@ -87,8 +87,8 @@ function mesh:serialize()
     local sTbl = {}
     sTbl.version = self.version
     sTbl.bounds  = {
-        min = self.min:serialize(),
-        max = self.max:serialize()
+        min = self.bounds.min:serialize(),
+        max = self.bounds.max:serialize()
     }
     sTbl.poly = {}
     for _, vec in ipairs(self.poly) do
@@ -123,10 +123,10 @@ function mesh:marching_squares()
     local max = Vector(0-math.huge, 0-math.huge)
     for x=1,imgW-1 do
         for y=1,imgH-1 do
-            local a00 = Color(self.imgData:getPixel(x    , y    )).a
-            local a10 = Color(self.imgData:getPixel(x + 1, y    )).a
-            local a01 = Color(self.imgData:getPixel(x    , y + 1)).a
-            local a11 = Color(self.imgData:getPixel(x + 1, y + 1)).a
+            local a00 = Color(self.imgData:getPixel(x - 1, y - 1)).a
+            local a10 = Color(self.imgData:getPixel(x    , y - 1)).a
+            local a01 = Color(self.imgData:getPixel(x - 1, y    )).a
+            local a11 = Color(self.imgData:getPixel(x    , y    )).a
 
             local binInt = foursquare_mask(
                 a00, a10,
@@ -171,8 +171,8 @@ function mesh:marching_squares()
     local start = edges[1]
     local prev     = nil
     local curr     = start
-    local currVec  = start.a
-    local polygon
+    local currVec  = start.b
+    local polygon = {}
     while true do
         if prev then
             if prev.t ~= curr.t then
@@ -226,7 +226,9 @@ function mesh:marching_squares()
         end
 
         local next
+        print('Current: ' .. tostring(currVec))
         for _, edge in ipairs(vertices[nextVec:hash()].e) do
+            print('  ' .. tostring(edge.a) .. '->' .. tostring(edge.b) .. ': ' .. tostring(edge == curr))
             if edge ~= curr and not edge.v then
                 next = edge
                 break
@@ -303,7 +305,7 @@ function mesh:generate_triangles()
             ::continue::
         end
     end
-    table.insert(triangles, { a=poly[1]:serialize(), b=poly[2]:serialize(), c=poly[3]:serialize() })
+    table.insert(triangles, { a=poly[1], b=poly[2], c=poly[3] })
     self.triangles = triangles
 end
 

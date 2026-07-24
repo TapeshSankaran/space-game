@@ -7,6 +7,8 @@ local input    = require("lib.input")
 require("lib.sys-set")
 Shaders = require("lib.shaders")
 
+local mesh = require("lib.mesh")
+
 -- On first load. Create global variables here
 function love.load()
     -- Set Window Settings --
@@ -20,6 +22,8 @@ function love.load()
     --  Fonts  --
     Fonts = font_maker(FILE_LOCATIONS.FONTS, Fonts)
     Images = image_maker(FILE_LOCATIONS.IMAGES, Images)
+    
+    local shipMesh = mesh:new('ship', Images.ship)
     
     --  Menus  --
     Menus = make_menus()
