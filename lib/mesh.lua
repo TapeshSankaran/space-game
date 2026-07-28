@@ -414,16 +414,17 @@ function mesh:draw()
 
         for i, v in ipairs(self.polygon) do
             local n = self.polygon[i==#self.polygon and 1 or i+1]
-
             local vec  = v*s + Vector(x, 0)
+            
             local next = n*s + Vector(x, 0)
             
             if #self.polygon > 1 then
-                love.graphics.setColor((COLORS.TRUE.B + COLORS.TRUE.G):rgb())
-                love.graphics.line(next:unpack(), vec:unpack())
+                love.graphics.setColor((COLORS.TRUE.G):rgb())
+                local line = {vec.x, vec.y, next.x, next.y} 
+                love.graphics.line(unpack(line))
             end
 
-            love.graphics.setColor((COLORS.TRUE.R + COLORS.TRUE.G):rgb())
+            love.graphics.setColor((COLORS.TRUE.R):rgb())
             love.graphics.circle("fill", vec.x, vec.y, 5)
         end
 
