@@ -67,7 +67,9 @@ COLORS = {
 Scene_Manager = nil
 Input = {}
 InputEvents = {}
+Mesh_Manager = {}
 GameState = GSTATE.PLAY
+Disabled = false
 
 Fonts = { s12 = {s = 12}, s16 = {s = 16}, s28 = {s = 28}, s32 = {s = 32}, s48 = {s = 48}, s64 = {s = 64}, s128 = {s = 128} }
 Images = {}

@@ -35,10 +35,15 @@ function button:new(cfg)
     
     self.name       = cfg.name
     self.background = shape(square)
-    self.font       = cfg.font             and cfg.font   or Fonts.s16.martius
+    self.enabled    = true
+    self.font       = cfg.font and cfg.font or Fonts.s16.martius
     self.args       = cfg.args and cfg.args or {}
 
     return self
+end
+
+function button:disabled()
+    return not self.enabled and Disabled
 end
 
 function button:is_hovering()
@@ -47,7 +52,7 @@ function button:is_hovering()
 end
 
 function button:is_pressed()
-    return self:is_hovering() and Input:is_mouse_down('left')
+    return not self:disabled() and self:is_hovering() and Input:is_mouse_down('left')
 end
 
 function button:is_triggered()

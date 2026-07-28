@@ -66,9 +66,9 @@ function input:update(dt)
     self.mouse.right.release  = (love.mouse.isDown(2) == false and self.mouse.right.prev  == true) and true or false
     self.mouse.middle.release = (love.mouse.isDown(3) == false and self.mouse.middle.prev == true) and true or false
     
-    self.mouse.left.click   = (love.mouse.isDown(1) == true and self.mouse.left.click   == false) and true or false
-    self.mouse.right.click  = (love.mouse.isDown(2) == true and self.mouse.right.click  == false) and true or false
-    self.mouse.middle.click = (love.mouse.isDown(3) == true and self.mouse.middle.click == false) and true or false
+    self.mouse.left.click   = (love.mouse.isDown(1) == true and self.mouse.left.prev   == false) and true or false
+    self.mouse.right.click  = (love.mouse.isDown(2) == true and self.mouse.right.prev  == false) and true or false
+    self.mouse.middle.click = (love.mouse.isDown(3) == true and self.mouse.middle.prev == false) and true or false
     self.mouse.scrolling    = scroll and scroll or Vector(0, 0)
 
     self.mouse.left.prev   = love.mouse.isDown(1)

@@ -9,18 +9,18 @@ local B  = Vector(0.5,   1)
 
 local outlines = {           -- (1,1) | (0,1) | (1,0) | (0,0)
     [0]  = { 0 },            --   0   |   0   |   0   |   0
-    [1]  = {{L, T}},         --   0   |   0   |   0   |   1
-    [2]  = {{R, T}},         --   0   |   0   |   1   |   0
+    [1]  = {{T, L}},         --   0   |   0   |   0   |   1
+    [2]  = {{T, R}},         --   0   |   0   |   1   |   0
     [3]  = {{L, R}},         --   0   |   0   |   1   |   1
     [4]  = {{L, B}},         --   0   |   1   |   0   |   0
     [5]  = {{T, B}},         --   0   |   1   |   0   |   1
-    [6]  = {{T, L}, {B, R}}, --   0   |   1   |   1   |   0
-    [7]  = {{B, R}},         --   0   |   1   |   1   |   1
+    [6]  = {{T, L}, {R, B}}, --   0   |   1   |   1   |   0
+    [7]  = {{R, B}},         --   0   |   1   |   1   |   1
     [8]  = {{R, B}},         --   1   |   0   |   0   |   0
     [9]  = {{B, L}, {T, R}}, --   1   |   0   |   0   |   1
-    [10] = {{B, T}},         --   1   |   0   |   1   |   0
+    [10] = {{T, B}},         --   1   |   0   |   1   |   0
     [11] = {{R, B}},         --   1   |   0   |   1   |   1
-    [12] = {{R, L}},         --   1   |   1   |   0   |   0
+    [12] = {{L, R}},         --   1   |   1   |   0   |   0
     [13] = {{T, R}},         --   1   |   1   |   0   |   1
     [14] = {{T, L}},         --   1   |   1   |   1   |   0
     [15] = { 1 },            --   1   |   1   |   1   |   1
@@ -35,12 +35,14 @@ function mesh:new(name, img)
     self.imgData = img.data
     self.name = name
     self.poly = {}
+    self.finished = true
 
     if self:exists() then
         self:load()
     else
-        self:generate()
-        self:save()
+        self.polygon = {}
+        self.triangles = {}
+        self.finished = false
     end
     
     return self
@@ -52,6 +54,12 @@ function mesh:load()
     self:deserialize(serialized)
 end
 
+function mesh:update()
+    if not self.finished then
+
+        self:make_poly()
+    end
+end
 
 function mesh:save()
     local path = FILE_LOCATIONS.CACHE .. self.name .. '.mesh'
@@ -105,14 +113,40 @@ function mesh:serialize()
     return Lume.serialize(sTbl)
 end
 
-function mesh:exists()
+function mesh:exists(p)
     local path = FILE_LOCATIONS.CACHE .. self.name .. '.mesh'
-    return love.filesystem.getInfo(path) ~= nil
+    return love.filesystem.getInfo(p or path) ~= nil
 end
 
+
+
 function mesh:generate()
-    self:marching_squares()
+    self:make_poly()
     self:generate_triangles()
+end
+
+function mesh:make_poly()
+
+    if Input:mouse_clicked('left') then
+        local mPos = Input:mouse_screen_position()
+        
+        local imgSize = Vector(self.imgData:getDimensions())
+        local s = imgSize.h / height
+        local x = width/2 - imgSize.w/2
+
+        mPos = (mPos - Vector(x, 0)) * s
+        table.insert(self.polygon, mPos)
+    end
+
+    if Input:mouse_clicked('right') then
+        if #self.polygon > 1 then
+            table.remove(self.polygon, #self.polygon)
+        end
+    end
+
+    if Input:is_key_pressed('return') then
+        
+    end
 end
 
 function mesh:marching_squares()
@@ -134,7 +168,7 @@ function mesh:marching_squares()
             )
             local outlnMask = outlines[binInt]
             for _, seg in ipairs(outlnMask) do
-                if seg == 0 or seg == 1 then goto continue end
+                if seg == 0 or seg == 1 then break end
 
                 local v1  = seg[1]
                 local v2  = seg[2]
@@ -151,7 +185,6 @@ function mesh:marching_squares()
                     v = false,
                 }
                 table.insert(edges, edge)
-                
                 if vertices[p1:hash()] then
                     table.insert(vertices[p1:hash()].e, edge)
                 else
@@ -163,15 +196,51 @@ function mesh:marching_squares()
                     vertices[p2:hash()] = { e={ edge }, vec=p2 }
                 end
 
-                ::continue::
             end
         end
+    end
+
+    --for key, item in pairs(vertices) do
+    --    local v = item.vec
+    --    local edges = item.e
+    --    if #edges ~= 2 then
+    --        print("Bad Vertex " .. tostring(v) .. ": \n  Edges:")
+    --        for i, edge in ipairs(edges) do
+    --            print("    " .. i .. ': ' .. tostring(edge.a) .. '->' .. tostring(edge.b))
+    --        end
+    --    end
+    --end
+    --local count = {}
+
+    local bad = {}
+
+    for _, v in pairs(vertices) do
+        if #v.e ~= 2 then
+            table.insert(bad, v)
+        end
+    end
+
+    for _, v in ipairs(bad) do
+        local nearest = math.huge
+        local nearestVec
+
+        for _, u in ipairs(bad) do
+            if u ~= v then
+                local d = (u.vec - v.vec):mag()
+                if d < nearest then
+                    nearest = d
+                    nearestVec = u.vec
+                end
+            end
+        end
+
+        print(v.vec, "deg", #v.e, "nearest", nearest, nearestVec)
     end
 
     local start = edges[1]
     local prev     = nil
     local curr     = start
-    local currVec  = start.b
+    local currVec  = start.a
     local polygon = {}
     while true do
         if prev then
@@ -226,15 +295,16 @@ function mesh:marching_squares()
         end
 
         local next
-        print('Current: ' .. tostring(currVec))
+        local msg = ''
         for _, edge in ipairs(vertices[nextVec:hash()].e) do
-            print('  ' .. tostring(edge.a) .. '->' .. tostring(edge.b) .. ': ' .. tostring(edge == curr))
-            if edge ~= curr and not edge.v then
+            msg = msg .. '\n  ' .. tostring(edge.a) .. '->' .. tostring(edge.b) .. '\n  <\n    currEdge?: ' .. tostring(edge == curr) .. '\n    visited?: ' .. tostring(edge.v) .. '\n    extmdy?: ' .. tostring(edge.a == start.a or edge.b == start.a) .. '\n  >'
+            if edge ~= curr and edge.v == false then
                 next = edge
                 break
             end
         end
 
+        assert(next ~= nil, "Next edge broken. \nCurrent Vector: " .. tostring(currVec) .. '\nNext Vector: ' .. tostring(nextVec) .. '\nNext Edge(s):' .. msg)
         currVec = nextVec
         prev = curr
         curr = next
@@ -242,7 +312,6 @@ function mesh:marching_squares()
 
     self.vertices = vertices
     self.edges = edges
-    
     self.poly = polygon
     
     self.bounds = { 
@@ -265,7 +334,6 @@ function mesh:generate_triangles()
     while #poly > 3 do
         
         for i, vertex in ipairs(poly) do
-
             local iA = i == 1 and #poly or i-1
 
             local a = poly[ iA ]
@@ -283,7 +351,7 @@ function mesh:generate_triangles()
 
                 local outOfBounds = false
                 
-                for _, item in ipairs(self.vertices) do
+                for _, item in pairs(self.vertices) do
 
                     local v = item.vec
                     if triangle.a ~= v and triangle.b ~= v and triangle.c ~= v then
@@ -334,6 +402,32 @@ function in_triangle(tri, pt)
     return inBounds(d1, d2, d3)
 end
 
-function mesh:draw()  end
+function mesh:draw()
+    if not self.finished then
+        love.graphics.setColor(COLORS.TRUE.WHITE:rgb())
+
+        local imgSize = Vector(self.imgData:getDimensions())
+        local s = height / imgSize.h
+        local anchor = Vector(imgSize.w / 2, imgSize.h / 2)
+        local x = width/2 - imgSize.w/2
+        love.graphics.draw(self.img, width/2, height/2, 0, s, s, anchor.x, anchor.y)
+
+        for i, v in ipairs(self.polygon) do
+            local n = self.polygon[i==#self.polygon and 1 or i+1]
+
+            local vec  = v*s + Vector(x, 0)
+            local next = n*s + Vector(x, 0)
+            
+            if #self.polygon > 1 then
+                love.graphics.setColor((COLORS.TRUE.B + COLORS.TRUE.G):rgb())
+                love.graphics.line(next:unpack(), vec:unpack())
+            end
+
+            love.graphics.setColor((COLORS.TRUE.R + COLORS.TRUE.G):rgb())
+            love.graphics.circle("fill", vec.x, vec.y, 5)
+        end
+
+    end
+end
 
 return mesh

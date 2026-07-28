@@ -4,10 +4,9 @@ require("conf")
 require("lib.menuMgr")
 local sceneMgr = require("lib.sceneMgr")
 local input    = require("lib.input")
+local meshMgr  = require("lib.meshMgr")
 require("lib.sys-set")
 Shaders = require("lib.shaders")
-
-local mesh = require("lib.mesh")
 
 -- On first load. Create global variables here
 function love.load()
@@ -23,7 +22,7 @@ function love.load()
     Fonts = font_maker(FILE_LOCATIONS.FONTS, Fonts)
     Images = image_maker(FILE_LOCATIONS.IMAGES, Images)
     
-    local shipMesh = mesh:new('ship', Images.ship)
+    Mesh_Manager = meshMgr:new({'ship'})
     
     --  Menus  --
     Menus = make_menus()
@@ -36,11 +35,13 @@ end
 function love.update(dt)
     Input:update(dt)
     Scene_Manager:update(dt)
+    Mesh_Manager:update()
 end
 
 -- Every draw frame, put draw functions here
 function love.draw()
     Scene_Manager:draw()
+    Mesh_Manager:draw()
     Input:reset()
 end
 
